@@ -1,33 +1,39 @@
 #include "Player.h"
 #include <SFML/Graphics/Texture.hpp>
 #include "InputManager.h"
+#include "World.h"
 
-Player::Player() 
+Player::Player(World& in_world) 
+	: PhysicsEntity(in_world, {}, zorder_player)
 {
 	texture.loadFromFile("Assets/player.png");
 	sprite = sf::Sprite(texture);
 }
 
 const float speed = 200.f;
-const float gravity = 50.f;
+
+bool nearly_equals(float a, float b, float epsilon = 0.002f)
+{
+	return std::abs(a - b) < epsilon;
+}
 
 void Player::update(float delta_time)
 {
 	if (input::is_key_held(sf::Keyboard::Q))
 	{
-		sprite.setPosition(sprite.getPosition() + sf::Vector2f(-speed * delta_time, 0));
+		move_immediate(sf::Vector2f(-speed * delta_time, 0));
 	}
 
 	if (input::is_key_held(sf::Keyboard::D))
 	{
-		sprite.setPosition(sprite.getPosition() + sf::Vector2f(speed * delta_time, 0));
+		move_immediate(sf::Vector2f(speed * delta_time, 0));
 	}
 
-	/** Gravité */
-	sprite.setPosition(sprite.getPosition() + sf::Vector2f(0, gravity * delta_time));
-}
+	if(input::is_key_pressed(sf::Keyboard::Space)
+		&& nearly_equals(velocity.y, 0.f))
+	{
+		move(sf::Vector2f(0, -world.get_gravity()));
+	}
 
-void Player::draw(sf::RenderWindow& window)
-{
-	window.draw(sprite);
+	PhysicsEntity::update(delta_time);
 }

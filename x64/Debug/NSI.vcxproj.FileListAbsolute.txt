@@ -1,0 +1,2 @@
+C:\Projects\JeuNSI2021\x64\Debug\NSI.exe
+C:\Projects\JeuNSI2021\x64\Debug\NSI.pdb

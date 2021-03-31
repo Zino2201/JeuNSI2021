@@ -1,15 +1,13 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "PhysicsEntity.h"
 
-class Player
+class Player final : public PhysicsEntity
 {
 public:
-	Player();
-	void update(float delta_time);
-	void draw(sf::RenderWindow& window);
+	Player(World& in_world);
+	void update(float delta_time) override;
 private:
 	sf::Texture texture;
-	sf::Sprite sprite;
 };
