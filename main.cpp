@@ -6,6 +6,8 @@
 #include <sstream>
 #include <chrono>
 #include <thread>
+#include "Blocks/BlockEntity.h"
+#include <cstdio>
 
 int main()
 {
@@ -17,13 +19,31 @@ int main()
 	sf::Texture sky_texture;
 	sky_texture.loadFromFile("Assets/background.png");
 	
-	Player* player = world.spawn<Player>({});
+	Player* player = world.spawn<Player>({ 15.f, -32.f});
 	Entity* sky = world.spawn<Entity>({}, sky_texture);
 	sky->set_collision_enabled(false);
-	
-	Entity* ground = world.spawn<Entity>({ 0.f, 500.f }, sky_texture);
-	ground->get_sprite().setColor(sf::Color::Red);
-	ground->set_scale({ 1.f, .3f });
+
+	sf::Texture dirt_texture;
+	sf::Texture grass_texture;
+	dirt_texture.loadFromFile("Assets/dirt.png");
+	grass_texture.loadFromFile("Assets/grass.png");
+
+	srand(2201);
+
+	for (int y = 0; y < 16; ++y)
+	{
+		for (int x = -512 / 2; x < 512; ++x)
+		{
+			int r = rand() % 2;
+			if (r < 20)
+				continue;
+
+			if(y == 0)
+				world.spawn<BlockEntity>(sf::Vector2f(x * 32, y * 32), grass_texture);
+			else
+				world.spawn<BlockEntity>(sf::Vector2f(x * 32, y * 32), dirt_texture);
+		}
+	}
 
 	sf::Font font;
 	font.loadFromFile("Assets/Roboto-Regular.ttf");
@@ -31,6 +51,7 @@ int main()
 	debug_text.setFillColor(sf::Color::Black);
 
 	sf::View view(window.getDefaultView());
+	view.zoom(0.85f);
 
 	auto previous = std::chrono::high_resolution_clock::now();
 	while (window.isOpen())
@@ -61,6 +82,9 @@ int main()
 		}
 
 		world.update(delta_time);
+		sky->set_position(player->get_position() - 
+			sf::Vector2f((sky_texture.getSize().x / 2) + player->get_position().x / 16, 
+			(sky_texture.getSize().y / 2) + player->get_position().y / 8));
 
 		std::stringstream ss;
 		ss << "FPS: " << 1.f / delta_time << "\n";
@@ -68,7 +92,7 @@ int main()
 		ss << "Vel: " << player->get_velocity().x << ", " << player->get_velocity().y << "\n";
 		debug_text.setString(ss.str());
 
-		window.clear(sf::Color::Red);
+		window.clear();
 		view.setCenter(player->get_position());
 		window.setView(view);
 		world.draw(window);
